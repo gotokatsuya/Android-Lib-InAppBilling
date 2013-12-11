@@ -146,11 +146,14 @@ public final class SamsungIabService extends IabService {
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd"); //$NON-NLS-1$
 
-    private IAPConnector connector;
-    private int          mode;
+    private final OnInitListener listener;
+    private IAPConnector   connector;
+    private int            mode;
 
-    public SamsungIabService(final Activity activity) {
+    public SamsungIabService(final Activity activity, final OnInitListener listener) {
         super(activity);
+
+        this.listener = listener;
     }
 
     @Override
@@ -209,7 +212,7 @@ public final class SamsungIabService extends IabService {
         this.mode = mode;
     }
 
-    public void init(final int mode, final OnInitCompletedListener listener) {
+    public void init(final int mode) {
         final Handler intermediaHandler = new Handler() {
             @Override
             public void handleMessage(final Message message) {
@@ -230,8 +233,8 @@ public final class SamsungIabService extends IabService {
                         }
                     }).show();
                 } else {
-                    if (listener != null) {
-                        listener.onInitCompleted(message.what);
+                    if (SamsungIabService.this.listener != null) {
+                        SamsungIabService.this.listener.onInitCompleted(message.what);
                     }
                 }
             }
@@ -259,7 +262,6 @@ public final class SamsungIabService extends IabService {
                     if (status == 0) {
                         intermediaHandler.sendEmptyMessage(0);
                     } else {
-
                         if (status == SamsungIabService.ERROR_UPGRADE_REQUIRED) {
                             intermediaHandler.sendMessage(intermediaHandler.obtainMessage(-1, new String[] { bundle.getString(SamsungIabService.EXTRA_ERROR_STRING), bundle.getString(SamsungIabService.EXTRA_UPGRADE_URL) }));
                         } else {
@@ -452,6 +454,10 @@ public final class SamsungIabService extends IabService {
     @Override
     protected void onServiceConnected(final ComponentName name, final IBinder service) {
         this.connector = IAPConnector.Stub.asInterface(service);
+
+        if (this.listener != null) {
+            this.listener.onInitReady();
+        }
     }
 
     @Override
