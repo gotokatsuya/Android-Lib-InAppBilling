@@ -147,8 +147,9 @@ public final class SamsungIabService extends IabService {
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd"); //$NON-NLS-1$
 
     private final OnInitListener listener;
-    private IAPConnector   connector;
-    private int            mode;
+
+    private IAPConnector connector;
+    private int          mode;
 
     public SamsungIabService(final Activity activity, final OnInitListener listener) {
         super(activity);
@@ -158,7 +159,9 @@ public final class SamsungIabService extends IabService {
 
     @Override
     public void onCreate() {
-        this.activity.bindService(new Intent(SamsungIabService.IAP_SERVICE), this.connection, Context.BIND_AUTO_CREATE);
+        if (this.connector == null) {
+            this.activity.bindService(new Intent(SamsungIabService.IAP_SERVICE), this.connection, Context.BIND_AUTO_CREATE);
+        }
     }
 
     @Override
