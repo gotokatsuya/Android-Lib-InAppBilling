@@ -1,8 +1,0 @@
-<resources>
-    <string name="in_app_purchase">In-app purchase</string>
-    <string name="invalid_iap_package">Samsung In-App Purchase application installed in your device is not valid</string>
-    <string name="upgrade_iap">Upgrade in-app purchase</string>
-    <string name="payment_error">Payment error</string>
-    <string name="invalid_purchase">Payment is not valid</string>
-    <string name="payment_success">Payment success</string>
-</resources>
