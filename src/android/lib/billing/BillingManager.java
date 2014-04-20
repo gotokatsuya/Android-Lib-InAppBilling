@@ -27,6 +27,26 @@ import com.android.vending.billing.IInAppBillingService;
  * Provides a straightforward and simple interface for sending in-app billing requests and managing in-app transactions in Google Play.
  */
 public final class BillingManager {
+    /**
+     * Callback when your app is connected to Google Play.
+     */
+    public interface OnConnectListener {
+        /**
+         * Callback when your app is connected to Google Play.
+         */
+        void onConnect();
+    }
+
+    /**
+     * Callback when your app is disconnected from Google Play.
+     */
+    public interface OnDisconnectListener {
+        /**
+         * Callback when your app is disconnected from Google Play.
+         */
+        void onDisconnect();
+    }
+
     public static final int BILLING_RESPONSE_RESULT_OK                  = 0;
     /** User pressed back or canceled a dialog */
     public static final int BILLING_RESPONSE_RESULT_USER_CANCELED       = 1;
@@ -72,6 +92,9 @@ public final class BillingManager {
     private IInAppBillingService service;
     private boolean              connected;
 
+    private OnConnectListener    onConnectListener;
+    private OnDisconnectListener onDisconnectListener;
+
     private int requestCode;
 
     /**
@@ -86,12 +109,20 @@ public final class BillingManager {
             public void onServiceConnected(final ComponentName name, final IBinder service) {
                 BillingManager.this.service   = IInAppBillingService.Stub.asInterface(service);
                 BillingManager.this.connected = true;
+
+                if (BillingManager.this.onConnectListener != null) {
+                    BillingManager.this.onConnectListener.onConnect();
+                }
             }
 
             @Override
             public void onServiceDisconnected(final ComponentName name) {
                 BillingManager.this.service   = null;
                 BillingManager.this.connected = false;
+
+                if (BillingManager.this.onDisconnectListener != null) {
+                    BillingManager.this.onDisconnectListener.onDisconnect();
+                }
             }
         };
     }
@@ -120,6 +151,10 @@ public final class BillingManager {
      * @return A pair of request result and a list of {@link Order}s. The value of {@link #BILLING_RESPONSE_RESULT_OK} represents the request was successful; error otherwise.
      */
     public Pair<Integer, Order> onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        if (this.service == null) {
+            return null;
+        }
+
         if (requestCode == 0) {
             return null;
         }
@@ -154,6 +189,14 @@ public final class BillingManager {
         return this.connected;
     }
 
+    public void setOnConnectListener(final OnConnectListener onConnectListener) {
+        this.onConnectListener = onConnectListener;
+    }
+
+    public void setOnDisconnectListener(final OnDisconnectListener onDisconnectListener) {
+        this.onDisconnectListener = onDisconnectListener;
+    }
+
     /**
      * Queries product details from Google Play that are available for purchase.
      * <p>Note: Do not call {@link #queryPurchasableProducts} method on the main thread. Calling this method triggers a network request which could block your main thread.</p>
@@ -184,11 +227,11 @@ public final class BillingManager {
         }
 
         final Bundle bundle = new Bundle();
-        bundle.putStringArrayList(BillingManager.KEY_ITEM_ID, new ArrayList<>(Arrays.asList(productIds)));
+        bundle.putStringArrayList(BillingManager.KEY_ITEM_ID, new ArrayList<String>(Arrays.asList(productIds)));
 
-        final Bundle                   responses    = this.service.getSkuDetails(BillingManager.INAPP_API_VERSION, this.activity.getPackageName(), type, bundle);
-        final int                      responseCode = responses.getInt(BillingManager.RESPONSE_CODE, BillingManager.BILLING_RESPONSE_RESULT_ERROR);
-        final List<Purchasable> products     = new ArrayList<>();
+        final Bundle            responses    = this.service.getSkuDetails(BillingManager.INAPP_API_VERSION, this.activity.getPackageName(), type, bundle);
+        final int               responseCode = responses.getInt(BillingManager.RESPONSE_CODE, BillingManager.BILLING_RESPONSE_RESULT_ERROR);
+        final List<Purchasable> products     = new ArrayList<Purchasable>();
 
         if (responseCode == BillingManager.BILLING_RESPONSE_RESULT_OK) {
             for (final String response : responses.getStringArrayList(BillingManager.DETAILS_LIST)) {
@@ -234,7 +277,7 @@ public final class BillingManager {
 
         final Bundle      responses    = this.service.getPurchases(BillingManager.INAPP_API_VERSION, this.activity.getPackageName(), type, continuationToken);
         final int         responseCode = responses.getInt(BillingManager.RESPONSE_CODE, BillingManager.BILLING_RESPONSE_RESULT_ERROR);
-        final List<Order> products     = new ArrayList<>();
+        final List<Order> products     = new ArrayList<Order>();
 
         if (responseCode == BillingManager.BILLING_RESPONSE_RESULT_OK) {
             for (final String response : responses.getStringArrayList(BillingManager.INAPP_PURCHASE_DATA_LIST)) {
