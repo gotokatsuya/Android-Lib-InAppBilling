@@ -95,8 +95,6 @@ public final class BillingManager {
     private OnConnectListener    onConnectListener;
     private OnDisconnectListener onDisconnectListener;
 
-    private int requestCode;
-
     /**
      * Creates a new {@link BillingManager} for your Activity.
      * @param activity The activity that initiates purchase requests.
@@ -159,23 +157,22 @@ public final class BillingManager {
             return null;
         }
 
-        if (requestCode == this.requestCode) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (data.getIntExtra(BillingManager.RESPONSE_CODE, 0) == BillingManager.BILLING_RESPONSE_RESULT_OK) {
-                    try {
-                        final JSONObject json = new JSONObject(data.getStringExtra(BillingManager.INAPP_PURCHASE_DATA));
+        if (resultCode == Activity.RESULT_OK) {
+            if (data.getIntExtra(BillingManager.RESPONSE_CODE, 0) == BillingManager.BILLING_RESPONSE_RESULT_OK) {
+                try {
+                    final JSONObject json = new JSONObject(data.getStringExtra(BillingManager.INAPP_PURCHASE_DATA));
 
-                        return Pair.create(Integer.valueOf(json.getInt(BillingManager.RESPONSE_CODE)), new Order(json.getString(BillingManager.ORDER_ID), json.getString(BillingManager.PACKAGE_NAME), json.getString(BillingManager.PRODUCT_ID), new Date(json.getLong(BillingManager.PURCHASE_TIME)), json.getInt(BillingManager.PURCHASE_STATE), json.getString(BillingManager.DEVELOPER_PAYLOAD), json.getString(BillingManager.PURCHASE_TOKEN)));
-                    } catch (final JSONException e) {
-                        Log.e(this.getClass().getName(), e.getMessage(), e);
-                    }
+                    return Pair.create(Integer.valueOf(json.getInt(BillingManager.RESPONSE_CODE)), new Order(json.getString(BillingManager.ORDER_ID), json.getString(BillingManager.PACKAGE_NAME), json.getString(BillingManager.PRODUCT_ID), new Date(json.getLong(BillingManager.PURCHASE_TIME)), json.getInt(BillingManager.PURCHASE_STATE), json.getString(BillingManager.DEVELOPER_PAYLOAD), json.getString(BillingManager.PURCHASE_TOKEN)));
+                } catch (final JSONException e) {
+                    Log.e(this.getClass().getName(), e.getMessage(), e);
                 }
-
-                return Pair.create(Integer.valueOf(BillingManager.BILLING_RESPONSE_RESULT_ERROR), null);
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                return Pair.create(Integer.valueOf(BillingManager.BILLING_RESPONSE_RESULT_USER_CANCELED), null);
             }
+
+            return Pair.create(Integer.valueOf(BillingManager.BILLING_RESPONSE_RESULT_ERROR), null);
+        } else if (resultCode == Activity.RESULT_CANCELED) {
+            return Pair.create(Integer.valueOf(BillingManager.BILLING_RESPONSE_RESULT_USER_CANCELED), null);
         }
+
 
         return null;
     }
