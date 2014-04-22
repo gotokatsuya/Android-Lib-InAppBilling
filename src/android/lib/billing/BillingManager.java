@@ -158,11 +158,14 @@ public final class BillingManager {
         }
 
         if (resultCode == Activity.RESULT_OK) {
-            if (data.getIntExtra(BillingManager.RESPONSE_CODE, 0) == BillingManager.BILLING_RESPONSE_RESULT_OK) {
+
+			int responseCode = data.getIntExtra(BillingManager.RESPONSE_CODE, BILLING_RESPONSE_RESULT_ERROR);
+			
+            if (responseCode == BillingManager.BILLING_RESPONSE_RESULT_OK) {
                 try {
                     final JSONObject json = new JSONObject(data.getStringExtra(BillingManager.INAPP_PURCHASE_DATA));
 
-                    return Pair.create(Integer.valueOf(json.getInt(BillingManager.RESPONSE_CODE)), new Order(json.getString(BillingManager.ORDER_ID), json.getString(BillingManager.PACKAGE_NAME), json.getString(BillingManager.PRODUCT_ID), new Date(json.getLong(BillingManager.PURCHASE_TIME)), json.getInt(BillingManager.PURCHASE_STATE), json.getString(BillingManager.DEVELOPER_PAYLOAD), json.getString(BillingManager.PURCHASE_TOKEN)));
+                    return Pair.create(Integer.valueOf(responseCode), new Order(json.getString(BillingManager.ORDER_ID), json.getString(BillingManager.PACKAGE_NAME), json.getString(BillingManager.PRODUCT_ID), new Date(json.getLong(BillingManager.PURCHASE_TIME)), json.getInt(BillingManager.PURCHASE_STATE), json.getString(BillingManager.DEVELOPER_PAYLOAD), json.getString(BillingManager.PURCHASE_TOKEN)));
                 } catch (final JSONException e) {
                     Log.e(this.getClass().getName(), e.getMessage(), e);
                 }
