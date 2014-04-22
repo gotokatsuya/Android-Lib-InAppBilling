@@ -153,7 +153,7 @@ public final class BillingManager {
             return null;
         }
 
-        if (requestCode == 0) {
+        if (data == null) {
             return null;
         }
 
