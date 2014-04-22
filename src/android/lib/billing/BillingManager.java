@@ -160,7 +160,7 @@ public final class BillingManager {
         if (resultCode == Activity.RESULT_OK) {
 
 			int responseCode = data.getIntExtra(BillingManager.RESPONSE_CODE, BILLING_RESPONSE_RESULT_ERROR);
-			
+
             if (responseCode == BillingManager.BILLING_RESPONSE_RESULT_OK) {
                 try {
                     final JSONObject json = new JSONObject(data.getStringExtra(BillingManager.INAPP_PURCHASE_DATA));
@@ -256,7 +256,7 @@ public final class BillingManager {
      * @throws RemoteException if the request cannot be completed by Google Play.
      */
     public Pair<Integer, List<Order>> queryPurchasedProducts() throws IllegalStateException, RemoteException {
-        return this.queryPurchased(BillingManager.PURCHASE_TYPE_SUBSCRIPTION, null);
+        return this.queryPurchased(BillingManager.PURCHASE_TYPE_INAPP, null);
     }
 
     /**
